@@ -1,7 +1,8 @@
 package org.dumbo.engine.cart;
 
-import org.dumbo.engine.product.IProduct;
+import org.dumbo.engine.product.*;
 import org.dumbo.engine.promotion.IPromotion;
+import org.dumbo.engine.promotion.MoreThanOneUnitPromotion;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,11 +27,23 @@ public class Cart {
     }
 
     // Returns product map that corresponds to number of each product
-    private Map<IProduct, Long> getProductMap() {
+    private Map<IProduct, Long> getProductsAsMap() {
         return products.stream().collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
     }
 
-    public void applyPromotions(){
-        this.promotions.forEach((promotion) -> promotion.apply(getProductMap()));
+    //Returns new amount of cart after applying promotions
+    public double applyPromotions() {
+        double amount = 0.0;
+        Map<IProduct, Long> productMap = getProductsAsMap();
+        for(IPromotion promotion : this.promotions) {
+            amount += promotion.apply(productMap);
+        }
+
+        for (Map.Entry<IProduct, Long> entry : productMap.entrySet()) {
+            if(!entry.getKey().isPromotionApplied()){
+                amount += entry.getKey().getUnitPrice();
+            }
+        }
+        return amount;
     }
 }

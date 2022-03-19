@@ -2,7 +2,15 @@ package org.dumbo.engine.product;
 
 public abstract class AbstractProduct implements IProduct {
 
-    public abstract int getId();
+    private boolean promotionApplied = false;
+
+    public void setPromotionApplied(boolean promotionApplied) {
+        this.promotionApplied = promotionApplied;
+    }
+
+    public boolean isPromotionApplied() {
+        return promotionApplied;
+    }
 
     public int hashCode() {
         return new Integer(getId()).hashCode();

@@ -6,12 +6,7 @@ import java.util.Map;
 
 public class MultipleProductPromotion implements IPromotion {
 
-    public MultipleProductPromotion(){
-
-    }
-
-    @Override
-    public void apply(Map<IProduct, Long> products) {
-
+    public double apply(Map<IProduct, Long> products) {
+        return 0.0;
     }
 }
