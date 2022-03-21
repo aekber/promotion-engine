@@ -24,16 +24,19 @@ public class MoreThanOneUnitPromotion implements IPromotion {
         double amount = 0.0;
         for (Map.Entry<IProduct, Long> entry : products.entrySet()) {
             IProduct product = entry.getKey();
-            if(product.getId() == this.productId && !product.isPromotionApplied()){
-                Long productCount = entry.getValue();
+            Long productCount = entry.getValue();
+            if(isPromotionApplicable(product, productCount)){
                 int withPromotion = (int) (productCount / this.unit);
                 int withoutPromotion = (int) (productCount % this.unit);
 
                 amount = withPromotion * this.promotionAmount + withoutPromotion * product.getUnitPrice();
-
                 product.setPromotionApplied(true);
             }
         }
         return amount;
+    }
+
+    private boolean isPromotionApplicable(IProduct product, Long productCount) {
+        return product.getId() == this.productId && !product.isPromotionApplied() && productCount >= this.unit;
     }
 }
