@@ -18,49 +18,56 @@ import static org.junit.Assert.assertEquals;
 
 public class PromotionTest {
 
+    private List<IPromotion> promotions;
+    private Cart cart;
+    
     @Before
     public void setUp() {
+        promotions = new ArrayList<>();
+        cart = new Cart();
     }
 
+    //3A=130
+    //4B=100
     @Test
     public void moreThanOneUnitPromotionTest() {
-        List<IPromotion> promotions = new ArrayList<>();
-        promotions.add(new MoreThanOneUnitPromotion(1, 3, 130));
-        promotions.add(new MoreThanOneUnitPromotion(2, 2, 50));
+        promotions.add(new MoreThanOneUnitPromotion(1, 3, 130, 1));
+        promotions.add(new MoreThanOneUnitPromotion(2, 4, 100, 1));
 
-        Cart c = new Cart();
-        c.addItem(new ProductA());
-        c.addItem(new ProductB());
-        c.addItem(new ProductA());
-        c.addItem(new ProductA());
-        c.addItem(new ProductB());
-        c.addItem(new ProductB());
-        c.addItem(new ProductC());
-        c.addItem(new ProductA());
-        c.addItem(new ProductA());
+        //5A+3B+C
+        cart.addItem(new ProductA());
+        cart.addItem(new ProductB());
+        cart.addItem(new ProductA());
+        cart.addItem(new ProductA());
+        cart.addItem(new ProductB());
+        cart.addItem(new ProductB());
+        cart.addItem(new ProductC());
+        cart.addItem(new ProductA());
+        cart.addItem(new ProductA());
 
-        c.setPromotions(promotions);
+        cart.setPromotions(promotions);
 
-        assertEquals(c.applyPromotions(), 325.0, 0.001);
+        assertEquals(cart.getPromotionsAppliedTotalAmount(), 335.0, 0.001);
     }
 
+    //C+D=20
     @Test
     public void multipleProductPromotionTest() {
-        List<IPromotion> promotions = new ArrayList<>();
         Map<Integer, Integer> promotionProducts = new HashMap<>();
         promotionProducts.put(3, 1);
         promotionProducts.put(4, 1);
-        promotions.add(new MultipleProductPromotion(promotionProducts,20d));
 
-        Cart c = new Cart();
-        c.addItem(new ProductA());
-        c.addItem(new ProductD());
-        c.addItem(new ProductC());
-        c.addItem(new ProductB());
+        promotions.add(new MultipleProductPromotion(promotionProducts,20d, 1));
 
-        c.setPromotions(promotions);
+        //A+B+C+D
+        cart.addItem(new ProductA());
+        cart.addItem(new ProductD());
+        cart.addItem(new ProductC());
+        cart.addItem(new ProductB());
 
-        assertEquals(c.applyPromotions(), 100.0, 0.001);
+        cart.setPromotions(promotions);
+
+        assertEquals(cart.getPromotionsAppliedTotalAmount(), 100.0, 0.001);
     }
 
     //3A=130
@@ -72,54 +79,242 @@ public class PromotionTest {
         promotionProducts.put(3, 1);
         promotionProducts.put(4, 1);
 
-        List<IPromotion> promotions = new ArrayList<>();
-        promotions.add(new MoreThanOneUnitPromotion(1, 3, 130));
-        promotions.add(new MoreThanOneUnitPromotion(2, 2, 50));
-        promotions.add(new MultipleProductPromotion(promotionProducts,20d));
+        promotions.add(new MoreThanOneUnitPromotion(1, 3, 130, 1));
+        promotions.add(new MoreThanOneUnitPromotion(2, 2, 50, 1));
+        promotions.add(new MultipleProductPromotion(promotionProducts,20d, 1));
 
-        Cart c = new Cart();
-        c.addItem(new ProductA());
-        c.addItem(new ProductB());
-        c.addItem(new ProductA());
-        c.addItem(new ProductA());
-        c.addItem(new ProductB());
-        c.addItem(new ProductB());
-        c.addItem(new ProductC());
-        c.addItem(new ProductA());
-        c.addItem(new ProductA());
-        c.addItem(new ProductD());
+        //5A+3B+C+D
+        cart.addItem(new ProductA());
+        cart.addItem(new ProductB());
+        cart.addItem(new ProductA());
+        cart.addItem(new ProductA());
+        cart.addItem(new ProductB());
+        cart.addItem(new ProductB());
+        cart.addItem(new ProductC());
+        cart.addItem(new ProductA());
+        cart.addItem(new ProductA());
+        cart.addItem(new ProductD());
 
-        c.setPromotions(promotions);
+        cart.setPromotions(promotions);
 
-        assertEquals(c.applyPromotions(), 330.0, 0.001);
+        assertEquals(cart.getPromotionsAppliedTotalAmount(), 330.0, 0.001);
     }
 
     //3A+2B+C=180
     @Test
     public void multipleProductPromotionTest2() {
-        List<IPromotion> promotions = new ArrayList<>();
         Map<Integer, Integer> promotionProducts = new HashMap<>();
         promotionProducts.put(1, 3);
         promotionProducts.put(2, 2);
         promotionProducts.put(3, 1);
-        promotions.add(new MultipleProductPromotion(promotionProducts,180d));
+
+        promotions.add(new MultipleProductPromotion(promotionProducts,180d, 1));
 
         //4A+3B+2C+D
-        Cart c = new Cart();
-        c.addItem(new ProductB());
-        c.addItem(new ProductA());
-        c.addItem(new ProductD());
-        c.addItem(new ProductC());
-        c.addItem(new ProductA());
-        c.addItem(new ProductB());
-        c.addItem(new ProductA());
-        c.addItem(new ProductA());
-        c.addItem(new ProductB());
-        c.addItem(new ProductC());
+        cart.addItem(new ProductB());
+        cart.addItem(new ProductA());
+        cart.addItem(new ProductD());
+        cart.addItem(new ProductC());
+        cart.addItem(new ProductA());
+        cart.addItem(new ProductB());
+        cart.addItem(new ProductA());
+        cart.addItem(new ProductA());
+        cart.addItem(new ProductB());
+        cart.addItem(new ProductC());
 
-        c.setPromotions(promotions);
+        cart.setPromotions(promotions);
 
-        assertEquals(c.applyPromotions(), 285.0, 0.001);
+        assertEquals(cart.getPromotionsAppliedTotalAmount(), 285.0, 0.001);
+    }
+
+    //A+B+3C+4D=210
+    @Test
+    public void multipleProductPromotionTest7() {
+        Map<Integer, Integer> promotionProducts = new HashMap<>();
+        promotionProducts.put(1, 1); //A
+        promotionProducts.put(2, 1); //2B
+        promotionProducts.put(3, 3); //3C
+        promotionProducts.put(4, 4); //4D
+
+        promotions.add(new MultipleProductPromotion(promotionProducts,210d, 1));
+
+        //4A+3B+5C+6D
+        cart.addItem(new ProductC());
+        cart.addItem(new ProductD());
+        cart.addItem(new ProductB());
+        cart.addItem(new ProductA());
+        cart.addItem(new ProductD());
+        cart.addItem(new ProductC());
+        cart.addItem(new ProductA());
+        cart.addItem(new ProductD());
+        cart.addItem(new ProductB());
+        cart.addItem(new ProductA());
+        cart.addItem(new ProductC());
+        cart.addItem(new ProductD());
+        cart.addItem(new ProductA());
+        cart.addItem(new ProductD());
+        cart.addItem(new ProductC());
+        cart.addItem(new ProductB());
+        cart.addItem(new ProductC());
+        cart.addItem(new ProductD());
+
+        cart.setPromotions(promotions);
+
+        assertEquals(cart.getPromotionsAppliedTotalAmount(), 470, 0.001);
+    }
+
+    //3C+4D=75
+    //3A=130
+    //2B=50
+    @Test
+    public void multipleProductPromotionTest8() {
+        Map<Integer, Integer> promotionProducts = new HashMap<>();
+        promotionProducts.put(3, 3); //3C
+        promotionProducts.put(4, 4); //4D
+
+        promotions.add(new MultipleProductPromotion(promotionProducts,75d, 1));
+        promotions.add(new MoreThanOneUnitPromotion(1, 3, 130d, 1));
+        promotions.add(new MoreThanOneUnitPromotion(2, 2, 50d, 1));
+
+        //4A+3B+5C+6D
+        cart.addItem(new ProductC());
+        cart.addItem(new ProductD());
+        cart.addItem(new ProductB());
+        cart.addItem(new ProductA());
+        cart.addItem(new ProductD());
+        cart.addItem(new ProductC());
+        cart.addItem(new ProductA());
+        cart.addItem(new ProductD());
+        cart.addItem(new ProductB());
+        cart.addItem(new ProductA());
+        cart.addItem(new ProductC());
+        cart.addItem(new ProductD());
+        cart.addItem(new ProductA());
+        cart.addItem(new ProductD());
+        cart.addItem(new ProductC());
+        cart.addItem(new ProductB());
+        cart.addItem(new ProductC());
+        cart.addItem(new ProductD());
+
+        cart.setPromotions(promotions);
+
+        assertEquals(cart.getPromotionsAppliedTotalAmount(), 385, 0.001);
+    }
+
+    //3A+2B+C=180
+    @Test
+    public void multipleProductPromotionTest6() {
+        Map<Integer, Integer> promotionProducts = new HashMap<>();
+        promotionProducts.put(1, 3);
+        promotionProducts.put(2, 2);
+        promotionProducts.put(3, 1);
+
+        promotions.add(new MultipleProductPromotion(promotionProducts,180d, 1));
+
+        //12A+8B+4C
+        cart.addItem(new ProductB());
+        cart.addItem(new ProductA());
+        cart.addItem(new ProductC());
+        cart.addItem(new ProductA());
+        cart.addItem(new ProductB());
+        cart.addItem(new ProductB());
+        cart.addItem(new ProductA());
+        cart.addItem(new ProductA());
+        cart.addItem(new ProductC());
+        cart.addItem(new ProductA());
+        cart.addItem(new ProductA());
+        cart.addItem(new ProductB());
+        cart.addItem(new ProductA());
+        cart.addItem(new ProductB());
+        cart.addItem(new ProductC());
+        cart.addItem(new ProductA());
+        cart.addItem(new ProductB());
+        cart.addItem(new ProductA());
+        cart.addItem(new ProductA());
+        cart.addItem(new ProductB());
+        cart.addItem(new ProductC());
+        cart.addItem(new ProductA());
+        cart.addItem(new ProductA());
+        cart.addItem(new ProductB());
+
+        cart.setPromotions(promotions);
+
+        assertEquals(cart.getPromotionsAppliedTotalAmount(), 720, 0.001);
+    }
+
+    //3A+2B+C=180
+    @Test
+    public void multipleProductPromotionTest4() {
+        Map<Integer, Integer> promotionProducts = new HashMap<>();
+        promotionProducts.put(1, 3);
+        promotionProducts.put(2, 2);
+        promotionProducts.put(3, 1);
+
+        promotions.add(new MultipleProductPromotion(promotionProducts,180d, 1));
+
+        //15A+10B+4C
+        cart.addItem(new ProductB());
+        cart.addItem(new ProductA());
+        cart.addItem(new ProductC());
+        cart.addItem(new ProductA());
+        cart.addItem(new ProductB());
+        cart.addItem(new ProductA());
+        cart.addItem(new ProductB());
+        cart.addItem(new ProductA());
+        cart.addItem(new ProductA());
+        cart.addItem(new ProductC());
+        cart.addItem(new ProductA());
+        cart.addItem(new ProductB());
+        cart.addItem(new ProductA());
+        cart.addItem(new ProductA());
+        cart.addItem(new ProductB());
+        cart.addItem(new ProductA());
+        cart.addItem(new ProductB());
+        cart.addItem(new ProductA());
+        cart.addItem(new ProductB());
+        cart.addItem(new ProductC());
+        cart.addItem(new ProductA());
+        cart.addItem(new ProductB());
+        cart.addItem(new ProductA());
+        cart.addItem(new ProductA());
+        cart.addItem(new ProductB());
+        cart.addItem(new ProductC());
+        cart.addItem(new ProductA());
+        cart.addItem(new ProductA());
+        cart.addItem(new ProductB());
+
+        cart.setPromotions(promotions);
+
+        assertEquals(cart.getPromotionsAppliedTotalAmount(), 930, 0.001);
+    }
+
+    //3A+2B+C=180
+    //3A=130
+    @Test
+    public void multipleProductPromotionTest5() {
+        Map<Integer, Integer> promotionProducts = new HashMap<>();
+        promotionProducts.put(1, 3);
+        promotionProducts.put(2, 2);
+        promotionProducts.put(3, 1);
+
+        promotions.add(new MoreThanOneUnitPromotion(1, 3, 130, 1));
+        promotions.add(new MultipleProductPromotion(promotionProducts,180d, 1));
+
+        //4A+3B+2C+D
+        cart.addItem(new ProductB());
+        cart.addItem(new ProductA());
+        cart.addItem(new ProductD());
+        cart.addItem(new ProductC());
+        cart.addItem(new ProductA());
+        cart.addItem(new ProductB());
+        cart.addItem(new ProductA());
+        cart.addItem(new ProductA());
+        cart.addItem(new ProductB());
+        cart.addItem(new ProductC());
+
+        cart.setPromotions(promotions);
+
+        assertEquals(cart.getPromotionsAppliedTotalAmount(), 310.0, 0.001);
     }
 
     @After
