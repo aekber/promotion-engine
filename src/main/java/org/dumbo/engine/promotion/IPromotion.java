@@ -6,4 +6,5 @@ import java.util.Map;
 
 public interface IPromotion {
     double apply(Map<IProduct, Long> products);
+    int getPriority();
 }
