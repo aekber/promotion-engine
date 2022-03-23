@@ -32,25 +32,24 @@ public class Cart {
 
     // Returns product map sorted by value that corresponds to number of each product
     private Map<IProduct, Long> getProductsAsMap() {
-        Map<IProduct, Long> productMap = products.stream().collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
-        return productMap.entrySet().stream()
-                                    .sorted(comparingByValue())
-                                    .collect(toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e2, LinkedHashMap::new));
+        return products.stream().collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
     }
 
     //Returns new amount of cart after applying promotions
     public double getPromotionsAppliedTotalAmount() {
-        double amount = 0.0;
         Map<IProduct, Long> productMap = getProductsAsMap();
-        for(IPromotion promotion : this.promotions) {
-            amount += promotion.apply(productMap);
-        }
 
-        for (Map.Entry<IProduct, Long> entry : productMap.entrySet()) {
-            if(!entry.getKey().isPromotionApplied()){
-                amount += entry.getValue() * entry.getKey().getUnitPrice();
-            }
-        }
+        //Total amount of promotioned products
+        double amount = this.promotions.stream()
+                                        .mapToDouble(promotion -> promotion.apply(productMap))
+                                        .sum();
+
+        //Total amount of non-promotioned products
+        amount += productMap.entrySet().stream()
+                                       .filter(product -> !product.getKey().isPromotionApplied())
+                                       .mapToDouble(product -> product.getValue() * product.getKey().getUnitPrice())
+                                       .sum();
+
         return amount;
     }
 }

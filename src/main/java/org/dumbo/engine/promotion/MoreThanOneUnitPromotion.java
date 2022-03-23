@@ -10,7 +10,7 @@ public class MoreThanOneUnitPromotion extends AbstractPromotion {
     private int unit;
     private double promotionAmount;
 
-    public MoreThanOneUnitPromotion(int productId, int unit, double promotionAmount, int promotionPriority){
+    public MoreThanOneUnitPromotion(int productId, int unit, double promotionAmount, int promotionPriority) {
         super(promotionPriority);
         this.productId = productId;
         this.unit = unit;
@@ -18,21 +18,21 @@ public class MoreThanOneUnitPromotion extends AbstractPromotion {
     }
 
     public double apply(Map<IProduct, Long> products) {
-        if(products == null){
-            throw new RuntimeException("products can not be null!");
+        if (products == null || products.size() == 0) {
+            throw new RuntimeException("products can not be null or empty!");
         }
 
-        double amount = 0.0;
-        for (Map.Entry<IProduct, Long> product : products.entrySet()) {
-            if(isPromotionApplicable(product)){
-                int withPromotion = (int) (product.getValue() / this.unit);
-                int withoutPromotion = (int) (product.getValue() % this.unit);
+        return products.entrySet().stream()
+                                  .filter(this::isPromotionApplicable)
+                                  .mapToDouble(product -> {
+                                      product.getKey().setPromotionApplied(true);
 
-                amount = withPromotion * this.promotionAmount + withoutPromotion * product.getKey().getUnitPrice();
-                product.getKey().setPromotionApplied(true);
-            }
-        }
-        return amount;
+                                      int withPromotion = (int) (product.getValue() / this.unit);
+                                      int withoutPromotion = (int) (product.getValue() % this.unit);
+
+                                      return withPromotion * this.promotionAmount + withoutPromotion * product.getKey().getUnitPrice();
+
+                                  }).sum();
     }
 
     private boolean isPromotionApplicable(Map.Entry<IProduct, Long> product) {
