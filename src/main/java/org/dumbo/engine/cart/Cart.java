@@ -7,9 +7,6 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static java.util.Map.Entry.comparingByValue;
-import static java.util.stream.Collectors.toMap;
-
 public class Cart {
 
     private List<IPromotion> promotions = new ArrayList<>();
@@ -28,6 +25,10 @@ public class Cart {
             throw new RuntimeException("product can not be null");
         }
         products.add(product);
+    }
+
+    public void clearProducts(){
+        products = new ArrayList<>();
     }
 
     // Returns product map sorted by value that corresponds to number of each product

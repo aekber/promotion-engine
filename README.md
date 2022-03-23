@@ -27,8 +27,8 @@ for products are;
 ```
 A --> id: 1, price: 50
 B --> id: 2, price: 30
-C --> id: 3, price: 15
-D --> id: 4, price: 10
+C --> id: 3, price: 20
+D --> id: 4, price: 15
 ```
 
 More than one unit promotion requires to have only one product for each instance of this promotion.If more promotion from this type needs to be defined, then
