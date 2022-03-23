@@ -6,36 +6,51 @@ import java.util.Map;
 
 public class MoreThanOneUnitPromotion extends AbstractPromotion {
 
-    private int productId;
-    private int unit;
+    private Map<Integer, Integer> productsInPromotion; // Key: productId, value: count of product corresponding to productId
     private double promotionAmount;
 
-    public MoreThanOneUnitPromotion(int productId, int unit, double promotionAmount, int promotionPriority) {
+    public MoreThanOneUnitPromotion(Map<Integer, Integer> productsInPromotion, double promotionAmount, int promotionPriority) {
         super(promotionPriority);
-        this.productId = productId;
-        this.unit = unit;
+        this.productsInPromotion = productsInPromotion;
         this.promotionAmount = promotionAmount;
     }
 
-    public double apply(Map<IProduct, Long> products) {
-        if (products == null || products.size() == 0) {
+    public double apply(Map<IProduct, Long> productsInCart) {
+        double amount = 0.0;
+        for (Map.Entry<IProduct, Long> product : productsInCart.entrySet()) {
+            for (Map.Entry<Integer, Integer> promotion : this.productsInPromotion.entrySet()) {
+                if (promotion.getKey() == product.getKey().getId()) {
+                    int withPromotion = (int) (product.getValue() / promotion.getValue());
+                    int withoutPromotion = (int) (product.getValue() % promotion.getValue());
+
+                    amount = withPromotion * this.promotionAmount + withoutPromotion * product.getKey().getUnitPrice();
+                    product.getKey().setPromotionApplied(true);
+                }
+            }
+        }
+        return amount;
+    }
+
+    public boolean isApplicable(Map<IProduct, Long> productsInCart) {
+        if (productsInCart == null || productsInCart.size() == 0) {
             throw new RuntimeException("products can not be null or empty!");
         }
 
-        return products.entrySet().stream()
-                                  .filter(this::isPromotionApplicable)
-                                  .mapToDouble(product -> {
-                                      product.getKey().setPromotionApplied(true);
+        if(productsInPromotion == null || productsInPromotion.size() != 1) {
+            throw new RuntimeException("invalid product count in promotion list!");
+        }
 
-                                      int withPromotion = (int) (product.getValue() / this.unit);
-                                      int withoutPromotion = (int) (product.getValue() % this.unit);
-
-                                      return withPromotion * this.promotionAmount + withoutPromotion * product.getKey().getUnitPrice();
-
-                                  }).sum();
+        for (Map.Entry<IProduct, Long> product : productsInCart.entrySet()) {
+            if(isValid(product)){
+                return true;
+            }
+        }
+        return false;
     }
 
-    private boolean isPromotionApplicable(Map.Entry<IProduct, Long> product) {
-        return product.getKey().getId() == this.productId && !product.getKey().isPromotionApplied() && product.getValue() >= this.unit;
+    private boolean isValid(Map.Entry<IProduct, Long> product) {
+        return product.getKey().getId() == (int) productsInPromotion.keySet().toArray()[0] &&
+               !product.getKey().isPromotionApplied() &&
+               product.getValue() >= (int) productsInPromotion.values().toArray()[0];
     }
 }

@@ -20,16 +20,19 @@ public class PromotionTest {
 
     private List<IPromotion> promotions;
     private Cart cart;
+    private Map<Integer, Integer> promotionProducts;
     
     @Before
     public void setUp() {
         promotions = new ArrayList<>();
         cart = new Cart();
+        promotionProducts = new HashMap<>();
     }
 
     @Test(expected = RuntimeException.class)
     public void emptyProductListForMoreThanOneUnitPromotionTest() {
-        promotions.add(new MoreThanOneUnitPromotion(1, 3, 130, 1));
+        promotionProducts.put(1, 3);
+        promotions.add(new MoreThanOneUnitPromotion(promotionProducts, 130, 1));
         cart.setPromotions(promotions);
 
         cart.getPromotionsAppliedTotalAmount();
@@ -45,7 +48,8 @@ public class PromotionTest {
 
     @Test(expected = RuntimeException.class)
     public void invalidItemInCartTest() {
-        promotions.add(new MoreThanOneUnitPromotion(1, 3, 130, 1));
+        promotionProducts.put(1, 3);
+        promotions.add(new MoreThanOneUnitPromotion(promotionProducts, 130, 1));
         cart.setPromotions(promotions);
 
         cart.addItem(new ProductA());
@@ -60,8 +64,12 @@ public class PromotionTest {
     //4B=100
     @Test
     public void moreThanOneUnitPromotionTest1() {
-        promotions.add(new MoreThanOneUnitPromotion(1, 3, 130, 1));
-        promotions.add(new MoreThanOneUnitPromotion(2, 4, 100, 1));
+        promotionProducts.put(1, 3);
+        promotions.add(new MoreThanOneUnitPromotion(promotionProducts, 130, 1));
+
+        Map<Integer, Integer> promotionProducts2 = new HashMap<>();
+        promotionProducts2.put(2, 4);
+        promotions.add(new MoreThanOneUnitPromotion(promotionProducts2, 100, 1));
 
         //5A+3B+C
         cart.addItem(new ProductA());
@@ -82,7 +90,6 @@ public class PromotionTest {
     //C+D=20
     @Test
     public void multipleProductPromotionTest1() {
-        Map<Integer, Integer> promotionProducts = new HashMap<>();
         promotionProducts.put(3, 1);
         promotionProducts.put(4, 1);
 
@@ -104,12 +111,17 @@ public class PromotionTest {
     //C+D=20
     @Test
     public void mixPromotionsTest1() {
-        Map<Integer, Integer> promotionProducts = new HashMap<>();
         promotionProducts.put(3, 1);
         promotionProducts.put(4, 1);
 
-        promotions.add(new MoreThanOneUnitPromotion(1, 3, 130, 1));
-        promotions.add(new MoreThanOneUnitPromotion(2, 2, 50, 1));
+        Map<Integer, Integer> promotionProducts2 = new HashMap<>();
+        promotionProducts2.put(1, 3);
+
+        Map<Integer, Integer> promotionProducts3 = new HashMap<>();
+        promotionProducts3.put(2, 2);
+
+        promotions.add(new MoreThanOneUnitPromotion(promotionProducts2, 130, 1));
+        promotions.add(new MoreThanOneUnitPromotion(promotionProducts3, 50, 1));
         promotions.add(new MultipleProductPromotion(promotionProducts,20d, 1));
 
         //5A+3B+C+D
@@ -132,7 +144,6 @@ public class PromotionTest {
     //3A+2B+C=180
     @Test
     public void multipleProductPromotionTest2() {
-        Map<Integer, Integer> promotionProducts = new HashMap<>();
         promotionProducts.put(1, 3);
         promotionProducts.put(2, 2);
         promotionProducts.put(3, 1);
@@ -159,7 +170,6 @@ public class PromotionTest {
     //A+B+3C+4D=210
     @Test
     public void multipleProductPromotionTest3() {
-        Map<Integer, Integer> promotionProducts = new HashMap<>();
         promotionProducts.put(1, 1); //A
         promotionProducts.put(2, 1); //2B
         promotionProducts.put(3, 3); //3C
@@ -197,13 +207,18 @@ public class PromotionTest {
     //2B=50
     @Test
     public void mixPromotionsTest2() {
-        Map<Integer, Integer> promotionProducts = new HashMap<>();
         promotionProducts.put(3, 3); //3C
         promotionProducts.put(4, 4); //4D
 
+        Map<Integer, Integer> promotionProducts2 = new HashMap<>();
+        promotionProducts2.put(1, 3);
+
+        Map<Integer, Integer> promotionProducts3 = new HashMap<>();
+        promotionProducts3.put(2, 2);
+
         promotions.add(new MultipleProductPromotion(promotionProducts,75d, 1));
-        promotions.add(new MoreThanOneUnitPromotion(1, 3, 130d, 1));
-        promotions.add(new MoreThanOneUnitPromotion(2, 2, 50d, 1));
+        promotions.add(new MoreThanOneUnitPromotion(promotionProducts2, 130d, 1));
+        promotions.add(new MoreThanOneUnitPromotion(promotionProducts3, 50d, 1));
 
         //4A+3B+5C+6D
         cart.addItem(new ProductC());
@@ -233,7 +248,6 @@ public class PromotionTest {
     //3A+2B+C=180
     @Test
     public void multipleProductPromotionTest4() {
-        Map<Integer, Integer> promotionProducts = new HashMap<>();
         promotionProducts.put(1, 3);
         promotionProducts.put(2, 2);
         promotionProducts.put(3, 1);
@@ -274,7 +288,6 @@ public class PromotionTest {
     //3A+2B+C=180
     @Test
     public void multipleProductPromotionTest5() {
-        Map<Integer, Integer> promotionProducts = new HashMap<>();
         promotionProducts.put(1, 3);
         promotionProducts.put(2, 2);
         promotionProducts.put(3, 1);
@@ -321,12 +334,14 @@ public class PromotionTest {
     //3A=130
     @Test
     public void mixPromotionsTest3() {
-        Map<Integer, Integer> promotionProducts = new HashMap<>();
         promotionProducts.put(1, 3);
         promotionProducts.put(2, 2);
         promotionProducts.put(3, 1);
 
-        promotions.add(new MoreThanOneUnitPromotion(1, 3, 130, 1));
+        Map<Integer, Integer> promotionProducts2 = new HashMap<>();
+        promotionProducts2.put(1, 3);
+
+        promotions.add(new MoreThanOneUnitPromotion(promotionProducts2, 130, 1));
         promotions.add(new MultipleProductPromotion(promotionProducts,180d, 1));
 
         //4A+3B+2C+D

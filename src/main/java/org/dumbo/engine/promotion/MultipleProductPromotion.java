@@ -16,6 +16,35 @@ public class MultipleProductPromotion extends AbstractPromotion {
     }
 
     public double apply(Map<IProduct, Long> productsInCart) {
+        int times = 1000;
+        double subAmount = 0.0;
+
+        for (Map.Entry<IProduct, Long> product : productsInCart.entrySet()) {
+            for (Map.Entry<Integer, Integer> promotion : this.productsInPromotion.entrySet()) {
+                if (product.getKey().getId() == promotion.getKey()) {
+                    int withPromotion = (int) (product.getValue() / promotion.getValue());
+
+                    if (withPromotion < times) {
+                        times = withPromotion;
+                    }
+
+                    product.getKey().setPromotionApplied(true);
+                }
+            }
+        }
+
+        for (Map.Entry<IProduct, Long> product : productsInCart.entrySet()) {
+            for (Map.Entry<Integer, Integer> promotion : this.productsInPromotion.entrySet()) {
+                if (product.getKey().getId() == promotion.getKey()) {
+                    subAmount += (product.getValue() - (times * promotion.getValue())) * product.getKey().getUnitPrice();
+                }
+            }
+        }
+
+        return times * this.promotionAmount + subAmount;
+    }
+
+    public boolean isApplicable(Map<IProduct, Long> productsInCart) {
         if (productsInCart == null || productsInCart.size() == 0) {
             throw new RuntimeException("products can not be null or empty!");
         }
@@ -23,7 +52,7 @@ public class MultipleProductPromotion extends AbstractPromotion {
         int counter = 0;
         for (Map.Entry<IProduct, Long> product : productsInCart.entrySet()) {
             for (Map.Entry<Integer, Integer> promotion : this.productsInPromotion.entrySet()) {
-                if (isPromotionApplicable(promotion, product)) {
+                if (isValid(promotion, product)) {
                     counter++;
                 }
             }
@@ -31,38 +60,12 @@ public class MultipleProductPromotion extends AbstractPromotion {
 
         //Check if all promotion requirements are met by products in the cart
         if (counter == this.productsInPromotion.size()) {
-            int times = 1000;
-            double subAmount = 0.0;
-
-            for (Map.Entry<IProduct, Long> product : productsInCart.entrySet()) {
-                for (Map.Entry<Integer, Integer> promotion : this.productsInPromotion.entrySet()) {
-                    if (product.getKey().getId() == promotion.getKey()) {
-                        int withPromotion = (int) (product.getValue() / promotion.getValue());
-
-                        if (withPromotion < times) {
-                            times = withPromotion;
-                        }
-
-                        product.getKey().setPromotionApplied(true);
-                    }
-                }
-            }
-
-            for (Map.Entry<IProduct, Long> product : productsInCart.entrySet()) {
-                for (Map.Entry<Integer, Integer> promotion : this.productsInPromotion.entrySet()) {
-                    if (product.getKey().getId() == promotion.getKey()) {
-                        subAmount += (product.getValue() - (times * promotion.getValue())) * product.getKey().getUnitPrice();
-                    }
-                }
-            }
-
-            return times * this.promotionAmount + subAmount;
+            return true;
         }
-        return 0d;
+        return false;
     }
 
-    private boolean isPromotionApplicable(Map.Entry<Integer, Integer> promotion, Map.Entry<IProduct, Long> product) {
+    private boolean isValid(Map.Entry<Integer, Integer> promotion, Map.Entry<IProduct, Long> product) {
         return product.getKey().getId() == promotion.getKey() && !product.getKey().isPromotionApplied() && product.getValue() >= promotion.getValue();
     }
-
 }
