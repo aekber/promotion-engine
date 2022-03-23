@@ -78,3 +78,7 @@ mvn test
 ```
 
 # Class Diagrams
+
+![ScreenShot](https://raw.github.com/aekber/promotion-engine/main/promotion.png)
+
+![ScreenShot](https://raw.github.com/aekber/promotion-engine/main/product.png)
