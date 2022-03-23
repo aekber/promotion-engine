@@ -6,24 +6,19 @@ import java.util.Map;
 
 public class MoreThanOneUnitPromotion extends AbstractPromotion {
 
-    private Map<Integer, Integer> productsInPromotion; // Key: productId, value: count of product corresponding to productId
-    private double promotionAmount;
-
-    public MoreThanOneUnitPromotion(Map<Integer, Integer> productsInPromotion, double promotionAmount, int promotionPriority) {
-        super(promotionPriority);
-        this.productsInPromotion = productsInPromotion;
-        this.promotionAmount = promotionAmount;
+    public MoreThanOneUnitPromotion(PromotionAggregator aggregator) {
+        super(aggregator);
     }
 
     public double apply(Map<IProduct, Long> productsInCart) {
         double amount = 0.0;
         for (Map.Entry<IProduct, Long> product : productsInCart.entrySet()) {
-            for (Map.Entry<Integer, Integer> promotion : this.productsInPromotion.entrySet()) {
+            for (Map.Entry<Integer, Integer> promotion : getProductsInPromotion().entrySet()) {
                 if (promotion.getKey() == product.getKey().getId()) {
                     int withPromotion = (int) (product.getValue() / promotion.getValue());
                     int withoutPromotion = (int) (product.getValue() % promotion.getValue());
 
-                    amount = withPromotion * this.promotionAmount + withoutPromotion * product.getKey().getUnitPrice();
+                    amount = withPromotion * getPromotionAmount() + withoutPromotion * product.getKey().getUnitPrice();
                     product.getKey().setPromotionApplied(true);
                 }
             }
@@ -36,7 +31,7 @@ public class MoreThanOneUnitPromotion extends AbstractPromotion {
             throw new RuntimeException("products can not be null or empty!");
         }
 
-        if(productsInPromotion == null || productsInPromotion.size() != 1) {
+        if(getProductsInPromotion() == null || getProductsInPromotion().size() != 1) {
             throw new RuntimeException("invalid product count in promotion list!");
         }
 
@@ -49,8 +44,8 @@ public class MoreThanOneUnitPromotion extends AbstractPromotion {
     }
 
     private boolean isValid(Map.Entry<IProduct, Long> product) {
-        return product.getKey().getId() == (int) productsInPromotion.keySet().toArray()[0] &&
+        return product.getKey().getId() == (int) getProductsInPromotion().keySet().toArray()[0] &&
                !product.getKey().isPromotionApplied() &&
-               product.getValue() >= (int) productsInPromotion.values().toArray()[0];
+               product.getValue() >= (int) getProductsInPromotion().values().toArray()[0];
     }
 }
