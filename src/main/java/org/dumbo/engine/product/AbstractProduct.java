@@ -13,7 +13,7 @@ public abstract class AbstractProduct implements IProduct {
     }
 
     public int hashCode() {
-        return new Integer(getId()).hashCode();
+        return Integer.hashCode(getId());
     }
 
     public boolean equals(Object o) {

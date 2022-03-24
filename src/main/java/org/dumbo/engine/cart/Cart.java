@@ -27,10 +27,6 @@ public class Cart {
         products.add(product);
     }
 
-    public void clearProducts(){
-        products.clear();
-    }
-
     // Returns product map sorted by value that corresponds to number of each product
     private Map<IProduct, Long> getProductsAsMap() {
         return products.stream().collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
@@ -40,12 +36,15 @@ public class Cart {
     public double getPromotionsAppliedTotalAmount() {
         double amount = 0.0;
         Map<IProduct, Long> productMap = getProductsAsMap();
+
+        //Calculates amount of promotioned products
         for(IPromotion promotion : this.promotions) {
             if(promotion.isApplicable(productMap)) {
                 amount += promotion.apply(productMap);
             }
         }
 
+        //Calculates amount of non-promotioned products
         for (Map.Entry<IProduct, Long> entry : productMap.entrySet()) {
             if(!entry.getKey().isPromotionApplied()){
                 amount += entry.getValue() * entry.getKey().getUnitPrice();
