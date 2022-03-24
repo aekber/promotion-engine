@@ -12,8 +12,8 @@ public class MoreThanOneUnitPromotion extends AbstractPromotion {
 
     public double apply(Map<IProduct, Long> productsInCart) {
         double amount = 0.0;
-        for (Map.Entry<IProduct, Long> product : productsInCart.entrySet()) {
-            for (Map.Entry<Integer, Integer> promotion : getProductsInPromotion().entrySet()) {
+        for (Map.Entry<IProduct, Long> product : productsInCart.entrySet()) { // Key: product, value: count of product corresponding to productId
+            for (Map.Entry<Integer, Integer> promotion : getProductsInPromotion().entrySet()) { // Key: productId, value: required count of product for promotion
                 if (promotion.getKey() == product.getKey().getId()) {
                     int withPromotion = (int) (product.getValue() / promotion.getValue());
                     int withoutPromotion = (int) (product.getValue() % promotion.getValue());

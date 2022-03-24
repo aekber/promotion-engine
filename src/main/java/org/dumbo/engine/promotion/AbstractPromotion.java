@@ -23,7 +23,7 @@ public abstract class AbstractPromotion implements IPromotion{
     }
 
     public static class PromotionAggregator {
-        public Map<Integer, Integer> productsInPromotion; // Key: productId, value: count of product corresponding to productId
+        public Map<Integer, Integer> productsInPromotion; // Key: productId, value: required count of product for promotion
         public double promotionAmount;
         public int priority;
     }

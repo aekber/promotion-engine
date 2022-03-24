@@ -28,7 +28,7 @@ public class Cart {
     }
 
     public void clearProducts(){
-        products = new ArrayList<>();
+        products.clear();
     }
 
     // Returns product map sorted by value that corresponds to number of each product

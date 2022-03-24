@@ -449,7 +449,7 @@ public class PromotionTest {
     //3A+2B+C=180
     //3A=130
     @Test
-    public void mixPromotionsTest3() {
+    public void mixPromotionsTestWithHigherPriority() {
         promotionProducts.put(1, 3);
         promotionProducts.put(2, 2);
         promotionProducts.put(3, 1);
@@ -464,7 +464,7 @@ public class PromotionTest {
         promotionProducts2.put(1, 3);
         PromotionAggregator aggregator2 = new PromotionAggregator();
         aggregator2.productsInPromotion = promotionProducts2;
-        aggregator2.priority = 2; //if this was 1, then amount would be 285 but now 310
+        aggregator2.priority = 2;
         aggregator2.promotionAmount = 130;
 
         promotions.add(new MoreThanOneUnitPromotion(aggregator2));
@@ -488,11 +488,53 @@ public class PromotionTest {
     }
 
     //Promotions
+    //3A+2B+C=180
+    //3A=130
+    @Test
+    public void mixPromotionsTestWithSamePriority() {
+        promotionProducts.put(1, 3);
+        promotionProducts.put(2, 2);
+        promotionProducts.put(3, 1);
+        PromotionAggregator aggregator1 = new PromotionAggregator();
+        aggregator1.productsInPromotion = promotionProducts;
+        aggregator1.priority = 1;
+        aggregator1.promotionAmount = 180;
+
+        promotions.add(new MultipleProductPromotion(aggregator1));
+
+        Map<Integer, Integer> promotionProducts2 = new HashMap<>();
+        promotionProducts2.put(1, 3);
+        PromotionAggregator aggregator2 = new PromotionAggregator();
+        aggregator2.productsInPromotion = promotionProducts2;
+        aggregator2.priority = 1;
+        aggregator2.promotionAmount = 130;
+
+        promotions.add(new MoreThanOneUnitPromotion(aggregator2));
+
+        //Products in cart
+        //4A+3B+2C+D
+        cart.addItem(new ProductB());
+        cart.addItem(new ProductA());
+        cart.addItem(new ProductD());
+        cart.addItem(new ProductC());
+        cart.addItem(new ProductA());
+        cart.addItem(new ProductB());
+        cart.addItem(new ProductA());
+        cart.addItem(new ProductA());
+        cart.addItem(new ProductB());
+        cart.addItem(new ProductC());
+
+        cart.setPromotions(promotions);
+
+        assertEquals(cart.getPromotionsAppliedTotalAmount(), 295.0, 0.001);
+    }
+
+    //Promotions
     //3A=130
     //2B=45
     //C+D=30
     @Test
-    public void mixPromotionsTest4() {
+    public void mixPromotionsTest3() {
         Map<Integer, Integer> promotionProducts2 = new HashMap<>();
         promotionProducts2.put(1, 3); //3A
         PromotionAggregator aggregator2 = new PromotionAggregator();
@@ -529,10 +571,42 @@ public class PromotionTest {
         cart.setPromotions(promotions);
 
         assertEquals(cart.getPromotionsAppliedTotalAmount(), 100.0, 0.001);
+    }
 
-        cart.clearProducts();
+    //Promotions
+    //3A=130
+    //2B=45
+    //C+D=30
+    @Test
+    public void mixPromotionsTest4() {
+        Map<Integer, Integer> promotionProducts2 = new HashMap<>();
+        promotionProducts2.put(1, 3); //3A
+        PromotionAggregator aggregator2 = new PromotionAggregator();
+        aggregator2.productsInPromotion = promotionProducts2;
+        aggregator2.priority = 1;
+        aggregator2.promotionAmount = 130;
 
+        promotions.add(new MoreThanOneUnitPromotion(aggregator2));
 
+        Map<Integer, Integer> promotionProducts3 = new HashMap<>();
+        promotionProducts3.put(2, 2);//2B
+        PromotionAggregator aggregator3 = new PromotionAggregator();
+        aggregator3.productsInPromotion = promotionProducts3;
+        aggregator3.priority = 1;
+        aggregator3.promotionAmount = 45;
+
+        promotions.add(new MoreThanOneUnitPromotion(aggregator3));
+
+        promotionProducts.put(3, 1); //C
+        promotionProducts.put(4, 1); //D
+        PromotionAggregator aggregator1 = new PromotionAggregator();
+        aggregator1.productsInPromotion = promotionProducts;
+        aggregator1.priority = 1;
+        aggregator1.promotionAmount = 30;
+
+        promotions.add(new MultipleProductPromotion(aggregator1));
+
+        cart.setPromotions(promotions);
 
         //Products in cart
         //5A+5B+C
@@ -549,6 +623,57 @@ public class PromotionTest {
         cart.addItem(new ProductA());
 
         assertEquals(cart.getPromotionsAppliedTotalAmount(), 370.0, 0.001);
+    }
+
+    //Promotions
+    //3A=130
+    //2B=45
+    //C+D=30
+    @Test
+    public void mixPromotionsTest5() {
+        Map<Integer, Integer> promotionProducts2 = new HashMap<>();
+        promotionProducts2.put(1, 3); //3A
+        PromotionAggregator aggregator2 = new PromotionAggregator();
+        aggregator2.productsInPromotion = promotionProducts2;
+        aggregator2.priority = 1;
+        aggregator2.promotionAmount = 130;
+
+        promotions.add(new MoreThanOneUnitPromotion(aggregator2));
+
+        Map<Integer, Integer> promotionProducts3 = new HashMap<>();
+        promotionProducts3.put(2, 2);//2B
+        PromotionAggregator aggregator3 = new PromotionAggregator();
+        aggregator3.productsInPromotion = promotionProducts3;
+        aggregator3.priority = 1;
+        aggregator3.promotionAmount = 45;
+
+        promotions.add(new MoreThanOneUnitPromotion(aggregator3));
+
+        promotionProducts.put(3, 1);
+        promotionProducts.put(4, 1);
+        PromotionAggregator aggregator1 = new PromotionAggregator();
+        aggregator1.productsInPromotion = promotionProducts;
+        aggregator1.priority = 1;
+        aggregator1.promotionAmount = 30;
+
+        promotions.add(new MultipleProductPromotion(aggregator1));
+
+        cart.setPromotions(promotions);
+
+        //Products in cart
+        //3A+5B+C+D
+        cart.addItem(new ProductB());
+        cart.addItem(new ProductA());
+        cart.addItem(new ProductB());
+        cart.addItem(new ProductC());
+        cart.addItem(new ProductB());
+        cart.addItem(new ProductA());
+        cart.addItem(new ProductB());
+        cart.addItem(new ProductB());
+        cart.addItem(new ProductA());
+        cart.addItem(new ProductD());
+
+        assertEquals(cart.getPromotionsAppliedTotalAmount(), 280.0, 0.001);
     }
 
     @After

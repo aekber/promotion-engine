@@ -11,9 +11,9 @@ public class MultipleProductPromotion extends AbstractPromotion {
     }
 
     public double apply(Map<IProduct, Long> productsInCart) {
-        int times = 1000;
-        for (Map.Entry<IProduct, Long> product : productsInCart.entrySet()) {
-            for (Map.Entry<Integer, Integer> promotion : getProductsInPromotion().entrySet()) {
+        int times = 1000; //This variable holds that how many times promotion can applied
+        for (Map.Entry<IProduct, Long> product : productsInCart.entrySet()) { // Key: product, value: count of product corresponding to productId
+            for (Map.Entry<Integer, Integer> promotion : getProductsInPromotion().entrySet()) { // Key: productId, value: required count of product for promotion
                 if (product.getKey().getId() == promotion.getKey()) {
                     int promotionFactor = (int) (product.getValue() / promotion.getValue());
 
@@ -26,9 +26,9 @@ public class MultipleProductPromotion extends AbstractPromotion {
             }
         }
 
-        double subAmount = 0.0;
-        for (Map.Entry<IProduct, Long> product : productsInCart.entrySet()) {
-            for (Map.Entry<Integer, Integer> promotion : getProductsInPromotion().entrySet()) {
+        double subAmount = 0.0; //This variable holds amount of residual products after promotion applied
+        for (Map.Entry<IProduct, Long> product : productsInCart.entrySet()) { // Key: product, value: count of product corresponding to productId
+            for (Map.Entry<Integer, Integer> promotion : getProductsInPromotion().entrySet()) { // Key: productId, value: required count of product for promotion
                 if (product.getKey().getId() == promotion.getKey()) {
                     subAmount += (product.getValue() - (times * promotion.getValue())) * product.getKey().getUnitPrice();
                 }
