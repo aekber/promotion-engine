@@ -10,10 +10,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 
@@ -21,53 +18,36 @@ public class PromotionTest {
 
     private List<IPromotion> promotions;
     private Cart cart;
-    private Map<Integer, Integer> promotionProducts;
 
     @Before
     public void setUp() {
         promotions = new ArrayList<>();
         cart = new Cart();
-        promotionProducts = new HashMap<>();
     }
 
     @Test(expected = RuntimeException.class)
     public void emptyProductListForMoreThanOneUnitPromotionTest() {
-        promotionProducts.put(1, 3);
-
-        PromotionAggregator aggregator = new PromotionAggregator();
-        aggregator.productsInPromotion = promotionProducts;
-        aggregator.priority = 1;
-        aggregator.promotionAmount = 130;
-
+        PromotionAggregator aggregator = getPromotionAggregator(1, 130, new Pair(1, 3));
         promotions.add(new MoreThanOneUnitPromotion(aggregator));
-        cart.setPromotions(promotions);
 
+        cart.setPromotions(promotions);
         cart.getPromotionsAppliedTotalAmount();
     }
 
     @Test(expected = RuntimeException.class)
     public void emptyProductListForMultipleProductPromotionTest() {
-        PromotionAggregator aggregator = new PromotionAggregator();
-        aggregator.productsInPromotion = null;
-        aggregator.priority = 1;
-        aggregator.promotionAmount = 20;
-
+        PromotionAggregator aggregator = getPromotionAggregator(1, 20);
         promotions.add(new MultipleProductPromotion(aggregator));
-        cart.setPromotions(promotions);
 
+        cart.setPromotions(promotions);
         cart.getPromotionsAppliedTotalAmount();
     }
 
     @Test(expected = RuntimeException.class)
     public void invalidItemInCartTest() {
-        promotionProducts.put(1, 3);
-
-        PromotionAggregator aggregator = new PromotionAggregator();
-        aggregator.productsInPromotion = promotionProducts;
-        aggregator.priority = 1;
-        aggregator.promotionAmount = 130;
-
+        PromotionAggregator aggregator = getPromotionAggregator(1, 130, new Pair(1, 3));
         promotions.add(new MoreThanOneUnitPromotion(aggregator));
+
         cart.setPromotions(promotions);
 
         cart.addItem(new ProductA());
@@ -80,14 +60,7 @@ public class PromotionTest {
 
     @Test(expected = RuntimeException.class)
     public void invalidProductCountInPromotionlist() {
-        promotionProducts.put(1, 3); //3A
-        promotionProducts.put(2, 1); //B, this is invalid. This promotion type can only one product in its map
-
-        PromotionAggregator aggregator = new PromotionAggregator();
-        aggregator.productsInPromotion = promotionProducts;
-        aggregator.priority = 1;
-        aggregator.promotionAmount = 130;
-
+        PromotionAggregator aggregator = getPromotionAggregator(1, 130, new Pair(1, 3), new Pair(2, 1));
         promotions.add(new MoreThanOneUnitPromotion(aggregator));
 
         //3A=B
@@ -97,7 +70,6 @@ public class PromotionTest {
         cart.addItem(new ProductB());
 
         cart.setPromotions(promotions);
-
         cart.getPromotionsAppliedTotalAmount();
     }
 
@@ -106,22 +78,11 @@ public class PromotionTest {
     //4B=100
     @Test
     public void moreThanOneUnitPromotionTest1() {
-        promotionProducts.put(1, 3);
-        PromotionAggregator aggregator1 = new PromotionAggregator();
-        aggregator1.productsInPromotion = promotionProducts;
-        aggregator1.priority = 1;
-        aggregator1.promotionAmount = 130;
+        PromotionAggregator aggregator = getPromotionAggregator(1, 130, new Pair(1, 3)); //3A=130
+        promotions.add(new MoreThanOneUnitPromotion(aggregator));
 
-        promotions.add(new MoreThanOneUnitPromotion(aggregator1));
-
-        Map<Integer, Integer> promotionProducts2 = new HashMap<>();
-        promotionProducts2.put(2, 4);
-        PromotionAggregator aggregator2 = new PromotionAggregator();
-        aggregator2.productsInPromotion = promotionProducts2;
-        aggregator2.priority = 1;
-        aggregator2.promotionAmount = 100;
-
-        promotions.add(new MoreThanOneUnitPromotion(aggregator2));
+        aggregator = getPromotionAggregator(1, 100, new Pair(2, 4)); //4B=100
+        promotions.add(new MoreThanOneUnitPromotion(aggregator));
 
         //Products in cart
         //5A+3B+C
@@ -144,13 +105,7 @@ public class PromotionTest {
     //C+D=30
     @Test
     public void multipleProductPromotionTest1() {
-        promotionProducts.put(3, 1);
-        promotionProducts.put(4, 1);
-        PromotionAggregator aggregator = new PromotionAggregator();
-        aggregator.productsInPromotion = promotionProducts;
-        aggregator.priority = 1;
-        aggregator.promotionAmount = 30;
-
+        PromotionAggregator aggregator = getPromotionAggregator(1, 30, new Pair(3, 1), new Pair(4, 1)); //C+D
         promotions.add(new MultipleProductPromotion(aggregator));
 
         //Products in cart
@@ -171,32 +126,14 @@ public class PromotionTest {
     //C+D=30
     @Test
     public void mixPromotionsTest1() {
-        Map<Integer, Integer> promotionProducts2 = new HashMap<>();
-        promotionProducts2.put(1, 3);
-        PromotionAggregator aggregator1 = new PromotionAggregator();
-        aggregator1.productsInPromotion = promotionProducts2;
-        aggregator1.priority = 1;
-        aggregator1.promotionAmount = 130;
+        PromotionAggregator aggregator = getPromotionAggregator(1, 130, new Pair(1, 3));
+        promotions.add(new MoreThanOneUnitPromotion(aggregator));
 
-        promotions.add(new MoreThanOneUnitPromotion(aggregator1));
+        aggregator = getPromotionAggregator(1, 50, new Pair(2, 2));
+        promotions.add(new MoreThanOneUnitPromotion(aggregator));
 
-        Map<Integer, Integer> promotionProducts3 = new HashMap<>();
-        promotionProducts3.put(2, 2);
-        PromotionAggregator aggregator2 = new PromotionAggregator();
-        aggregator2.productsInPromotion = promotionProducts3;
-        aggregator2.priority = 1;
-        aggregator2.promotionAmount = 50;
-
-        promotions.add(new MoreThanOneUnitPromotion(aggregator2));
-
-        promotionProducts.put(3, 1);
-        promotionProducts.put(4, 1);
-        PromotionAggregator aggregator3 = new PromotionAggregator();
-        aggregator3.productsInPromotion = promotionProducts;
-        aggregator3.priority = 1;
-        aggregator3.promotionAmount = 30;
-
-        promotions.add(new MultipleProductPromotion(aggregator3));
+        aggregator = getPromotionAggregator(1, 30, new Pair(3, 1), new Pair(4, 1));
+        promotions.add(new MultipleProductPromotion(aggregator));
 
         //Products in cart
         //5A+3B+C+D
@@ -220,14 +157,7 @@ public class PromotionTest {
     //3A+2B+C=180
     @Test
     public void multipleProductPromotionTest2() {
-        promotionProducts.put(1, 3);
-        promotionProducts.put(2, 2);
-        promotionProducts.put(3, 1);
-        PromotionAggregator aggregator = new PromotionAggregator();
-        aggregator.productsInPromotion = promotionProducts;
-        aggregator.priority = 1;
-        aggregator.promotionAmount = 180;
-
+        PromotionAggregator aggregator = getPromotionAggregator(1, 180, new Pair(1, 3), new Pair(2, 2), new Pair(3, 1)); //3A+2B+C
         promotions.add(new MultipleProductPromotion(aggregator));
 
         //Products in cart
@@ -252,15 +182,7 @@ public class PromotionTest {
     //A+B+3C+4D=210
     @Test
     public void multipleProductPromotionTest3() {
-        promotionProducts.put(1, 1); //A
-        promotionProducts.put(2, 1); //2B
-        promotionProducts.put(3, 3); //3C
-        promotionProducts.put(4, 4); //4D
-        PromotionAggregator aggregator = new PromotionAggregator();
-        aggregator.productsInPromotion = promotionProducts;
-        aggregator.priority = 1;
-        aggregator.promotionAmount = 210;
-
+        PromotionAggregator aggregator = getPromotionAggregator(1, 210, new Pair(1, 1), new Pair(2, 1), new Pair(3, 3), new Pair(4, 4));
         promotions.add(new MultipleProductPromotion(aggregator));
 
         //Products in cart
@@ -295,32 +217,14 @@ public class PromotionTest {
     //2B=50
     @Test
     public void mixPromotionsTest2() {
-        promotionProducts.put(3, 3); //3C
-        promotionProducts.put(4, 4); //4D
-        PromotionAggregator aggregator1 = new PromotionAggregator();
-        aggregator1.productsInPromotion = promotionProducts;
-        aggregator1.priority = 1;
-        aggregator1.promotionAmount = 75;
+        PromotionAggregator aggregator = getPromotionAggregator(1, 75, new Pair(3, 3), new Pair(4, 4));
+        promotions.add(new MultipleProductPromotion(aggregator));
 
-        promotions.add(new MultipleProductPromotion(aggregator1));
+        aggregator = getPromotionAggregator(1, 130, new Pair(1, 3));
+        promotions.add(new MoreThanOneUnitPromotion(aggregator));
 
-        Map<Integer, Integer> promotionProducts2 = new HashMap<>();
-        promotionProducts2.put(1, 3);
-        PromotionAggregator aggregator2 = new PromotionAggregator();
-        aggregator2.productsInPromotion = promotionProducts2;
-        aggregator2.priority = 1;
-        aggregator2.promotionAmount = 130;
-
-        promotions.add(new MoreThanOneUnitPromotion(aggregator2));
-
-        Map<Integer, Integer> promotionProducts3 = new HashMap<>();
-        promotionProducts3.put(2, 2);
-        PromotionAggregator aggregator3 = new PromotionAggregator();
-        aggregator3.productsInPromotion = promotionProducts3;
-        aggregator3.priority = 1;
-        aggregator3.promotionAmount = 50;
-
-        promotions.add(new MoreThanOneUnitPromotion(aggregator3));
+        aggregator = getPromotionAggregator(1, 50, new Pair(2, 2));
+        promotions.add(new MoreThanOneUnitPromotion(aggregator));
 
         //Products in cart
         //4A+3B+5C+6D
@@ -352,14 +256,7 @@ public class PromotionTest {
     //3A+2B+C=180
     @Test
     public void multipleProductPromotionTest4() {
-        promotionProducts.put(1, 3);
-        promotionProducts.put(2, 2);
-        promotionProducts.put(3, 1);
-        PromotionAggregator aggregator = new PromotionAggregator();
-        aggregator.productsInPromotion = promotionProducts;
-        aggregator.priority = 1;
-        aggregator.promotionAmount = 180;
-
+        PromotionAggregator aggregator = getPromotionAggregator(1, 180, new Pair(1, 3), new Pair(2, 2), new Pair(3, 1));
         promotions.add(new MultipleProductPromotion(aggregator));
 
         //Products in cart
@@ -398,14 +295,7 @@ public class PromotionTest {
     //3A+2B+C=180
     @Test
     public void multipleProductPromotionTest5() {
-        promotionProducts.put(1, 3);
-        promotionProducts.put(2, 2);
-        promotionProducts.put(3, 1);
-        PromotionAggregator aggregator = new PromotionAggregator();
-        aggregator.productsInPromotion = promotionProducts;
-        aggregator.priority = 1;
-        aggregator.promotionAmount = 180;
-
+        PromotionAggregator aggregator = getPromotionAggregator(1, 180, new Pair(1, 3), new Pair(2, 2), new Pair(3, 1));
         promotions.add(new MultipleProductPromotion(aggregator));
 
         //Products in cart
@@ -450,24 +340,11 @@ public class PromotionTest {
     //3A=130
     @Test
     public void mixPromotionsTestWithHigherPriority() {
-        promotionProducts.put(1, 3);
-        promotionProducts.put(2, 2);
-        promotionProducts.put(3, 1);
-        PromotionAggregator aggregator1 = new PromotionAggregator();
-        aggregator1.productsInPromotion = promotionProducts;
-        aggregator1.priority = 1;
-        aggregator1.promotionAmount = 180;
+        PromotionAggregator aggregator = getPromotionAggregator(1, 180, new Pair(1, 3), new Pair(2, 2), new Pair(3, 1));
+        promotions.add(new MultipleProductPromotion(aggregator));
 
-        promotions.add(new MultipleProductPromotion(aggregator1));
-
-        Map<Integer, Integer> promotionProducts2 = new HashMap<>();
-        promotionProducts2.put(1, 3);
-        PromotionAggregator aggregator2 = new PromotionAggregator();
-        aggregator2.productsInPromotion = promotionProducts2;
-        aggregator2.priority = 2;
-        aggregator2.promotionAmount = 130;
-
-        promotions.add(new MoreThanOneUnitPromotion(aggregator2));
+        aggregator = getPromotionAggregator(2, 130, new Pair(1, 3));
+        promotions.add(new MoreThanOneUnitPromotion(aggregator));
 
         //Products in cart
         //4A+3B+2C+D
@@ -492,24 +369,11 @@ public class PromotionTest {
     //3A=130
     @Test
     public void mixPromotionsTestWithSamePriority() {
-        promotionProducts.put(1, 3);
-        promotionProducts.put(2, 2);
-        promotionProducts.put(3, 1);
-        PromotionAggregator aggregator1 = new PromotionAggregator();
-        aggregator1.productsInPromotion = promotionProducts;
-        aggregator1.priority = 1;
-        aggregator1.promotionAmount = 180;
+        PromotionAggregator aggregator = getPromotionAggregator(1, 180, new Pair(1, 3), new Pair(2, 2), new Pair(3, 1));
+        promotions.add(new MultipleProductPromotion(aggregator));
 
-        promotions.add(new MultipleProductPromotion(aggregator1));
-
-        Map<Integer, Integer> promotionProducts2 = new HashMap<>();
-        promotionProducts2.put(1, 3);
-        PromotionAggregator aggregator2 = new PromotionAggregator();
-        aggregator2.productsInPromotion = promotionProducts2;
-        aggregator2.priority = 1;
-        aggregator2.promotionAmount = 130;
-
-        promotions.add(new MoreThanOneUnitPromotion(aggregator2));
+        aggregator = getPromotionAggregator(1, 130, new Pair(1, 3));
+        promotions.add(new MoreThanOneUnitPromotion(aggregator));
 
         //Products in cart
         //4A+3B+2C+D
@@ -535,32 +399,14 @@ public class PromotionTest {
     //C+D=30
     @Test
     public void mixPromotionsTest3() {
-        Map<Integer, Integer> promotionProducts2 = new HashMap<>();
-        promotionProducts2.put(1, 3); //3A
-        PromotionAggregator aggregator2 = new PromotionAggregator();
-        aggregator2.productsInPromotion = promotionProducts2;
-        aggregator2.priority = 1;
-        aggregator2.promotionAmount = 130;
+        PromotionAggregator aggregator = getPromotionAggregator(1, 130, new Pair(1, 3));
+        promotions.add(new MoreThanOneUnitPromotion(aggregator));
 
-        promotions.add(new MoreThanOneUnitPromotion(aggregator2));
+        aggregator = getPromotionAggregator(1, 45, new Pair(2, 2));
+        promotions.add(new MoreThanOneUnitPromotion(aggregator));
 
-        Map<Integer, Integer> promotionProducts3 = new HashMap<>();
-        promotionProducts3.put(2, 2);//2B
-        PromotionAggregator aggregator3 = new PromotionAggregator();
-        aggregator3.productsInPromotion = promotionProducts3;
-        aggregator3.priority = 1;
-        aggregator3.promotionAmount = 45;
-
-        promotions.add(new MoreThanOneUnitPromotion(aggregator3));
-
-        promotionProducts.put(3, 1);
-        promotionProducts.put(4, 1);
-        PromotionAggregator aggregator1 = new PromotionAggregator();
-        aggregator1.productsInPromotion = promotionProducts;
-        aggregator1.priority = 1;
-        aggregator1.promotionAmount = 30;
-
-        promotions.add(new MultipleProductPromotion(aggregator1));
+        aggregator = getPromotionAggregator(1, 30, new Pair(3, 1), new Pair(4, 1));
+        promotions.add(new MultipleProductPromotion(aggregator));
 
         //Products in cart
         //A+B+C
@@ -579,32 +425,14 @@ public class PromotionTest {
     //C+D=30
     @Test
     public void mixPromotionsTest4() {
-        Map<Integer, Integer> promotionProducts2 = new HashMap<>();
-        promotionProducts2.put(1, 3); //3A
-        PromotionAggregator aggregator2 = new PromotionAggregator();
-        aggregator2.productsInPromotion = promotionProducts2;
-        aggregator2.priority = 1;
-        aggregator2.promotionAmount = 130;
+        PromotionAggregator aggregator = getPromotionAggregator(1, 130, new Pair(1, 3));
+        promotions.add(new MoreThanOneUnitPromotion(aggregator));
 
-        promotions.add(new MoreThanOneUnitPromotion(aggregator2));
+        aggregator = getPromotionAggregator(1, 45, new Pair(2, 2));
+        promotions.add(new MoreThanOneUnitPromotion(aggregator));
 
-        Map<Integer, Integer> promotionProducts3 = new HashMap<>();
-        promotionProducts3.put(2, 2);//2B
-        PromotionAggregator aggregator3 = new PromotionAggregator();
-        aggregator3.productsInPromotion = promotionProducts3;
-        aggregator3.priority = 1;
-        aggregator3.promotionAmount = 45;
-
-        promotions.add(new MoreThanOneUnitPromotion(aggregator3));
-
-        promotionProducts.put(3, 1); //C
-        promotionProducts.put(4, 1); //D
-        PromotionAggregator aggregator1 = new PromotionAggregator();
-        aggregator1.productsInPromotion = promotionProducts;
-        aggregator1.priority = 1;
-        aggregator1.promotionAmount = 30;
-
-        promotions.add(new MultipleProductPromotion(aggregator1));
+        aggregator = getPromotionAggregator(1, 30, new Pair(3, 1), new Pair(4, 1));
+        promotions.add(new MultipleProductPromotion(aggregator));
 
         cart.setPromotions(promotions);
 
@@ -631,32 +459,14 @@ public class PromotionTest {
     //C+D=30
     @Test
     public void mixPromotionsTest5() {
-        Map<Integer, Integer> promotionProducts2 = new HashMap<>();
-        promotionProducts2.put(1, 3); //3A
-        PromotionAggregator aggregator2 = new PromotionAggregator();
-        aggregator2.productsInPromotion = promotionProducts2;
-        aggregator2.priority = 1;
-        aggregator2.promotionAmount = 130;
+        PromotionAggregator aggregator = getPromotionAggregator(1, 130, new Pair(1, 3));
+        promotions.add(new MoreThanOneUnitPromotion(aggregator));
 
-        promotions.add(new MoreThanOneUnitPromotion(aggregator2));
+        aggregator = getPromotionAggregator(1, 45, new Pair(2, 2));
+        promotions.add(new MoreThanOneUnitPromotion(aggregator));
 
-        Map<Integer, Integer> promotionProducts3 = new HashMap<>();
-        promotionProducts3.put(2, 2);//2B
-        PromotionAggregator aggregator3 = new PromotionAggregator();
-        aggregator3.productsInPromotion = promotionProducts3;
-        aggregator3.priority = 1;
-        aggregator3.promotionAmount = 45;
-
-        promotions.add(new MoreThanOneUnitPromotion(aggregator3));
-
-        promotionProducts.put(3, 1);
-        promotionProducts.put(4, 1);
-        PromotionAggregator aggregator1 = new PromotionAggregator();
-        aggregator1.productsInPromotion = promotionProducts;
-        aggregator1.priority = 1;
-        aggregator1.promotionAmount = 30;
-
-        promotions.add(new MultipleProductPromotion(aggregator1));
+        aggregator = getPromotionAggregator(1, 30, new Pair(3, 1), new Pair(4, 1));
+        promotions.add(new MultipleProductPromotion(aggregator));
 
         cart.setPromotions(promotions);
 
@@ -678,6 +488,27 @@ public class PromotionTest {
 
     @After
     public void tearDown() {
+    }
+
+    private PromotionAggregator getPromotionAggregator(int priority, double promotionAmount, Pair... pairs) {
+        Map<Integer, Integer> promotionProducts = new HashMap<>();
+        Arrays.stream(pairs).forEach(pair -> promotionProducts.put(pair.key, pair.value));
+
+        PromotionAggregator aggregator = new PromotionAggregator();
+        aggregator.productsInPromotion = pairs.length == 0 ? null : promotionProducts;
+        aggregator.priority = priority;
+        aggregator.promotionAmount = promotionAmount;
+        return aggregator;
+    }
+
+    private static class Pair{
+        private int key;
+        private int value;
+
+        public Pair(int key, int value) {
+            this.key = key;
+            this.value = value;
+        }
     }
 }
 
