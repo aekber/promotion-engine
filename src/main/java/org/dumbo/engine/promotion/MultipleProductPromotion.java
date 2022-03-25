@@ -12,6 +12,10 @@ public class MultipleProductPromotion extends AbstractPromotion {
 
     public double apply(Map<IProduct, Long> productsInCart) {
         int times = 1000; //This variable holds that how many times promotion can applied
+
+        //P.S: I could have written those lines with flatMap using stream api, but I do not find it very readable, so I decided to
+        //write them using traditional for each loops :)
+        
         for (Map.Entry<IProduct, Long> product : productsInCart.entrySet()) { // Key: product, value: count of product corresponding to productId
             for (Map.Entry<Integer, Integer> promotion : getProductsInPromotion().entrySet()) { // Key: productId, value: required count of product for promotion
                 if (product.getKey().getId() == promotion.getKey()) {
