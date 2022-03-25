@@ -34,22 +34,20 @@ public class Cart {
 
     //Returns new amount of cart after applying promotions
     public double getPromotionsAppliedTotalAmount() {
-        double amount = 0.0;
         Map<IProduct, Long> productMap = getProductsAsMap();
 
-        //Calculates amount of promotioned products
-        for(IPromotion promotion : this.promotions) {
-            if(promotion.isApplicable(productMap)) {
-                amount += promotion.apply(productMap);
-            }
-        }
+        //Total amount of promotioned products
+        double amount = this.promotions.stream()
+                                       .filter(promotion -> promotion.isApplicable(productMap))
+                                       .mapToDouble(promotion -> promotion.apply(productMap))
+                                       .sum();
 
-        //Calculates amount of non-promotioned products
-        for (Map.Entry<IProduct, Long> entry : productMap.entrySet()) {
-            if(!entry.getKey().isPromotionApplied()){
-                amount += entry.getValue() * entry.getKey().getUnitPrice();
-            }
-        }
+        //Total amount of non-promotioned products
+        amount += productMap.entrySet().stream()
+                                       .filter(product -> !product.getKey().isPromotionApplied())
+                                       .mapToDouble(product -> product.getValue() * product.getKey().getUnitPrice())
+                                       .sum();
+
         return amount;
     }
 }

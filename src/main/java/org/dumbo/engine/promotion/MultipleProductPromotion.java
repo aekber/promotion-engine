@@ -27,8 +27,8 @@ public class MultipleProductPromotion extends AbstractPromotion {
         }
 
         double subAmount = 0.0; //This variable holds amount of residual products after promotion applied
-        for (Map.Entry<IProduct, Long> product : productsInCart.entrySet()) { // Key: product, value: count of product corresponding to productId
-            for (Map.Entry<Integer, Integer> promotion : getProductsInPromotion().entrySet()) { // Key: productId, value: required count of product for promotion
+        for (Map.Entry<IProduct, Long> product : productsInCart.entrySet()) {
+            for (Map.Entry<Integer, Integer> promotion : getProductsInPromotion().entrySet()) {
                 if (product.getKey().getId() == promotion.getKey()) {
                     subAmount += (product.getValue() - (times * promotion.getValue())) * product.getKey().getUnitPrice();
                 }
