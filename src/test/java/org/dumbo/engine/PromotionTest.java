@@ -18,16 +18,18 @@ public class PromotionTest {
 
     private List<IPromotion> promotions;
     private Cart cart;
+    private PromotionAggregator aggregator;
 
     @Before
     public void setUp() {
         promotions = new ArrayList<>();
         cart = new Cart();
+        aggregator = new PromotionAggregator();
     }
 
     @Test(expected = RuntimeException.class)
     public void emptyProductListForMoreThanOneUnitPromotionTest() {
-        PromotionAggregator aggregator = getPromotionAggregator(1, 130, new Pair(1, 3));
+        aggregator = getPromotionAggregator(1, 130, new Pair(1, 3));
         promotions.add(new MoreThanOneUnitPromotion(aggregator));
 
         cart.setPromotions(promotions);
@@ -36,7 +38,7 @@ public class PromotionTest {
 
     @Test(expected = RuntimeException.class)
     public void emptyProductListForMultipleProductPromotionTest() {
-        PromotionAggregator aggregator = getPromotionAggregator(1, 20);
+        aggregator = getPromotionAggregator(1, 20);
         promotions.add(new MultipleProductPromotion(aggregator));
 
         cart.setPromotions(promotions);
@@ -45,7 +47,7 @@ public class PromotionTest {
 
     @Test(expected = RuntimeException.class)
     public void invalidItemInCartTest() {
-        PromotionAggregator aggregator = getPromotionAggregator(1, 130, new Pair(1, 3));
+        aggregator = getPromotionAggregator(1, 130, new Pair(1, 3));
         promotions.add(new MoreThanOneUnitPromotion(aggregator));
 
         cart.setPromotions(promotions);
@@ -60,7 +62,7 @@ public class PromotionTest {
 
     @Test(expected = RuntimeException.class)
     public void invalidProductCountInPromotionlist() {
-        PromotionAggregator aggregator = getPromotionAggregator(1, 130, new Pair(1, 3), new Pair(2, 1));
+        aggregator = getPromotionAggregator(1, 130, new Pair(1, 3), new Pair(2, 1));
         promotions.add(new MoreThanOneUnitPromotion(aggregator));
 
         //3A=B
@@ -78,7 +80,7 @@ public class PromotionTest {
     //4B=100
     @Test
     public void moreThanOneUnitPromotionTest1() {
-        PromotionAggregator aggregator = getPromotionAggregator(1, 130, new Pair(1, 3)); //3A=130
+        aggregator = getPromotionAggregator(1, 130, new Pair(1, 3)); //3A=130
         promotions.add(new MoreThanOneUnitPromotion(aggregator));
 
         aggregator = getPromotionAggregator(1, 100, new Pair(2, 4)); //4B=100
@@ -105,7 +107,7 @@ public class PromotionTest {
     //C+D=30
     @Test
     public void multipleProductPromotionTest1() {
-        PromotionAggregator aggregator = getPromotionAggregator(1, 30, new Pair(3, 1), new Pair(4, 1)); //C+D
+        aggregator = getPromotionAggregator(1, 30, new Pair(3, 1), new Pair(4, 1)); //C+D
         promotions.add(new MultipleProductPromotion(aggregator));
 
         //Products in cart
@@ -126,7 +128,7 @@ public class PromotionTest {
     //C+D=30
     @Test
     public void mixPromotionsTest1() {
-        PromotionAggregator aggregator = getPromotionAggregator(1, 130, new Pair(1, 3));
+        aggregator = getPromotionAggregator(1, 130, new Pair(1, 3));
         promotions.add(new MoreThanOneUnitPromotion(aggregator));
 
         aggregator = getPromotionAggregator(1, 50, new Pair(2, 2));
@@ -157,7 +159,7 @@ public class PromotionTest {
     //3A+2B+C=180
     @Test
     public void multipleProductPromotionTest2() {
-        PromotionAggregator aggregator = getPromotionAggregator(1, 180, new Pair(1, 3), new Pair(2, 2), new Pair(3, 1)); //3A+2B+C
+        aggregator = getPromotionAggregator(1, 180, new Pair(1, 3), new Pair(2, 2), new Pair(3, 1)); //3A+2B+C
         promotions.add(new MultipleProductPromotion(aggregator));
 
         //Products in cart
@@ -182,7 +184,7 @@ public class PromotionTest {
     //A+B+3C+4D=210
     @Test
     public void multipleProductPromotionTest3() {
-        PromotionAggregator aggregator = getPromotionAggregator(1, 210, new Pair(1, 1), new Pair(2, 1), new Pair(3, 3), new Pair(4, 4));
+        aggregator = getPromotionAggregator(1, 210, new Pair(1, 1), new Pair(2, 1), new Pair(3, 3), new Pair(4, 4));
         promotions.add(new MultipleProductPromotion(aggregator));
 
         //Products in cart
@@ -212,12 +214,149 @@ public class PromotionTest {
     }
 
     //Promotions
+    //A+2B+7C=200
+    //5C=90
+    //4A+D=190
+    //3D=40
+    @Test
+    public void multipleProductPromotionWithDescendingPriorityTest() {
+        aggregator = getPromotionAggregator(4, 200, new Pair(1, 1), new Pair(2, 2), new Pair(3, 7));
+        promotions.add(new MultipleProductPromotion(aggregator));
+
+        aggregator = getPromotionAggregator(3, 90, new Pair(3, 5));
+        promotions.add(new MoreThanOneUnitPromotion(aggregator));
+
+        aggregator = getPromotionAggregator(2, 190, new Pair(1, 4), new Pair(4, 1));
+        promotions.add(new MultipleProductPromotion(aggregator));
+
+        aggregator = getPromotionAggregator(1, 40, new Pair(4, 3));
+        promotions.add(new MoreThanOneUnitPromotion(aggregator));
+
+        //Products in cart
+        //4A+3B+5C+6D
+        cart.addItem(new ProductC());
+        cart.addItem(new ProductD());
+        cart.addItem(new ProductB());
+        cart.addItem(new ProductC());
+        cart.addItem(new ProductA());
+        cart.addItem(new ProductD());
+        cart.addItem(new ProductC());
+        cart.addItem(new ProductA());
+        cart.addItem(new ProductD());
+        cart.addItem(new ProductB());
+        cart.addItem(new ProductA());
+        cart.addItem(new ProductD());
+        cart.addItem(new ProductA());
+        cart.addItem(new ProductD());
+        cart.addItem(new ProductC());
+        cart.addItem(new ProductB());
+        cart.addItem(new ProductD());
+        cart.addItem(new ProductC());
+
+        cart.setPromotions(promotions);
+
+        assertEquals(cart.getPromotionsAppliedTotalAmount(), 445, 0.001);
+    }
+
+    //Promotions
+    //A+2B+7C=200
+    //5C=90
+    //4A+D=190
+    //3D=40
+    @Test
+    public void multipleProductPromotionWithAscendingPriorityTest() {
+        aggregator = getPromotionAggregator(1, 200, new Pair(1, 1), new Pair(2, 2), new Pair(3, 7));
+        promotions.add(new MultipleProductPromotion(aggregator));
+
+        aggregator = getPromotionAggregator(2, 90, new Pair(3, 5));
+        promotions.add(new MoreThanOneUnitPromotion(aggregator));
+
+        aggregator = getPromotionAggregator(3, 190, new Pair(1, 4), new Pair(4, 1));
+        promotions.add(new MultipleProductPromotion(aggregator));
+
+        aggregator = getPromotionAggregator(4, 40, new Pair(4, 3));
+        promotions.add(new MoreThanOneUnitPromotion(aggregator));
+
+        //Products in cart
+        //4A+3B+5C+6D
+        cart.addItem(new ProductC());
+        cart.addItem(new ProductD());
+        cart.addItem(new ProductB());
+        cart.addItem(new ProductC());
+        cart.addItem(new ProductA());
+        cart.addItem(new ProductD());
+        cart.addItem(new ProductC());
+        cart.addItem(new ProductA());
+        cart.addItem(new ProductD());
+        cart.addItem(new ProductB());
+        cart.addItem(new ProductA());
+        cart.addItem(new ProductD());
+        cart.addItem(new ProductA());
+        cart.addItem(new ProductD());
+        cart.addItem(new ProductC());
+        cart.addItem(new ProductB());
+        cart.addItem(new ProductD());
+        cart.addItem(new ProductC());
+
+        cart.setPromotions(promotions);
+
+        assertEquals(cart.getPromotionsAppliedTotalAmount(), 460, 0.001);
+    }
+
+    //Promotions
+    //A+2B+7C=200
+    //5C=90
+    //4A+D=190
+    //3D=40
+    @Test
+    public void multipleProductPromotionWithRandomPriorityTest() {
+        aggregator = getPromotionAggregator(1, 200, new Pair(1, 1), new Pair(2, 2), new Pair(3, 7));
+        promotions.add(new MultipleProductPromotion(aggregator));
+
+        aggregator = getPromotionAggregator(4, 90, new Pair(3, 5));
+        promotions.add(new MoreThanOneUnitPromotion(aggregator));
+
+        aggregator = getPromotionAggregator(2, 190, new Pair(1, 4), new Pair(4, 1));
+        promotions.add(new MultipleProductPromotion(aggregator));
+
+        aggregator = getPromotionAggregator(3, 40, new Pair(4, 3));
+        promotions.add(new MoreThanOneUnitPromotion(aggregator));
+
+        //Products in cart
+        //4A+3B+7C+6D
+        cart.addItem(new ProductC());
+        cart.addItem(new ProductD());
+        cart.addItem(new ProductB());
+        cart.addItem(new ProductC());
+        cart.addItem(new ProductA());
+        cart.addItem(new ProductD());
+        cart.addItem(new ProductC());
+        cart.addItem(new ProductA());
+        cart.addItem(new ProductD());
+        cart.addItem(new ProductC());
+        cart.addItem(new ProductB());
+        cart.addItem(new ProductA());
+        cart.addItem(new ProductC());
+        cart.addItem(new ProductD());
+        cart.addItem(new ProductA());
+        cart.addItem(new ProductD());
+        cart.addItem(new ProductC());
+        cart.addItem(new ProductB());
+        cart.addItem(new ProductD());
+        cart.addItem(new ProductC());
+
+        cart.setPromotions(promotions);
+
+        assertEquals(cart.getPromotionsAppliedTotalAmount(), 500, 0.001);
+    }
+
+    //Promotions
     //3C+4D=75
     //3A=130
     //2B=50
     @Test
     public void mixPromotionsTest2() {
-        PromotionAggregator aggregator = getPromotionAggregator(1, 75, new Pair(3, 3), new Pair(4, 4));
+        aggregator = getPromotionAggregator(1, 75, new Pair(3, 3), new Pair(4, 4));
         promotions.add(new MultipleProductPromotion(aggregator));
 
         aggregator = getPromotionAggregator(1, 130, new Pair(1, 3));
@@ -256,7 +395,7 @@ public class PromotionTest {
     //3A+2B+C=180
     @Test
     public void multipleProductPromotionTest4() {
-        PromotionAggregator aggregator = getPromotionAggregator(1, 180, new Pair(1, 3), new Pair(2, 2), new Pair(3, 1));
+        aggregator = getPromotionAggregator(1, 180, new Pair(1, 3), new Pair(2, 2), new Pair(3, 1));
         promotions.add(new MultipleProductPromotion(aggregator));
 
         //Products in cart
@@ -295,7 +434,7 @@ public class PromotionTest {
     //3A+2B+C=180
     @Test
     public void multipleProductPromotionTest5() {
-        PromotionAggregator aggregator = getPromotionAggregator(1, 180, new Pair(1, 3), new Pair(2, 2), new Pair(3, 1));
+        aggregator = getPromotionAggregator(1, 180, new Pair(1, 3), new Pair(2, 2), new Pair(3, 1));
         promotions.add(new MultipleProductPromotion(aggregator));
 
         //Products in cart
@@ -340,7 +479,7 @@ public class PromotionTest {
     //3A=130
     @Test
     public void mixPromotionsTestWithHigherPriority() {
-        PromotionAggregator aggregator = getPromotionAggregator(1, 180, new Pair(1, 3), new Pair(2, 2), new Pair(3, 1));
+        aggregator = getPromotionAggregator(1, 180, new Pair(1, 3), new Pair(2, 2), new Pair(3, 1));
         promotions.add(new MultipleProductPromotion(aggregator));
 
         aggregator = getPromotionAggregator(2, 130, new Pair(1, 3));
@@ -369,7 +508,7 @@ public class PromotionTest {
     //3A=130
     @Test
     public void mixPromotionsTestWithSamePriority() {
-        PromotionAggregator aggregator = getPromotionAggregator(1, 180, new Pair(1, 3), new Pair(2, 2), new Pair(3, 1));
+        aggregator = getPromotionAggregator(1, 180, new Pair(1, 3), new Pair(2, 2), new Pair(3, 1));
         promotions.add(new MultipleProductPromotion(aggregator));
 
         aggregator = getPromotionAggregator(1, 130, new Pair(1, 3));
@@ -399,7 +538,7 @@ public class PromotionTest {
     //C+D=30
     @Test
     public void mixPromotionsTest3() {
-        PromotionAggregator aggregator = getPromotionAggregator(1, 130, new Pair(1, 3));
+        aggregator = getPromotionAggregator(1, 130, new Pair(1, 3));
         promotions.add(new MoreThanOneUnitPromotion(aggregator));
 
         aggregator = getPromotionAggregator(1, 45, new Pair(2, 2));
@@ -425,7 +564,7 @@ public class PromotionTest {
     //C+D=30
     @Test
     public void mixPromotionsTest4() {
-        PromotionAggregator aggregator = getPromotionAggregator(1, 130, new Pair(1, 3));
+        aggregator = getPromotionAggregator(1, 130, new Pair(1, 3));
         promotions.add(new MoreThanOneUnitPromotion(aggregator));
 
         aggregator = getPromotionAggregator(1, 45, new Pair(2, 2));
@@ -459,7 +598,7 @@ public class PromotionTest {
     //C+D=30
     @Test
     public void mixPromotionsTest5() {
-        PromotionAggregator aggregator = getPromotionAggregator(1, 130, new Pair(1, 3));
+        aggregator = getPromotionAggregator(1, 130, new Pair(1, 3));
         promotions.add(new MoreThanOneUnitPromotion(aggregator));
 
         aggregator = getPromotionAggregator(1, 45, new Pair(2, 2));
